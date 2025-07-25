@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Coordinate Converter</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { margin-bottom: 20px; }
+        input { margin-right: 10px; padding: 5px; }
+        button { padding: 5px 10px; }
+        #result { margin-top: 20px; font-weight: bold; }
+        #map-container { position: relative; }
+        canvas { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Map Coordinate Converter</h1>
+    <p>Enter your in-game coordinates to get the approximate location on the map image.</p>
+    
+    <form id="coord-form">
+        <label>In-Game X: <input type="number" id="game-x" required></label>
+        <label>In-Game Y: <input type="number" id="game-y" required></label>
+        <button type="submit">Calculate & Highlight</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div id="map-container">
+        <canvas id="map-canvas" width="1241" height="1241"></canvas>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('map-canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.src = 'map.png';  // Ensure map.png is in the same folder
+        
+        // Mapping constants
+        const sx = 0.15577889447236182;
+        const tx = -33.22613065326641;
+        const sy = 0.14386792452830188;
+        const ty = 33.52830188679252;
+        
+        // Load the image once
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0, 1241, 1241);
+        };
+        
+        // Form submission handler
+        document.getElementById('coord-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const gameX = parseFloat(document.getElementById('game-x').value);
+            const gameY = parseFloat(document.getElementById('game-y').value);
+            
+            // Calculate image coordinates
+            const imgX = (sx * gameX) + tx;
+            const imgY = (sy * gameY) + ty;
+            
+            // Display result
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `Approximate Image Coordinates: (${Math.round(imgX)}, ${Math.round(imgY)})`;
+            
+            if (imgX < 0 || imgX > 1241 || imgY < 0 || imgY > 1241) {
+                resultDiv.innerHTML += `<br><strong>Warning:</strong> Point is outside the image bounds (0-1240).`;
+            }
+            
+            // Redraw image and highlight point
+            ctx.drawImage(img, 0, 0, 1241, 1241);
+            ctx.beginPath();
+            ctx.arc(imgX, imgY, 10, 0, 2 * Math.PI);  // Red circle with radius 10
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+        });
+    </script>
+</body>
+</html>
